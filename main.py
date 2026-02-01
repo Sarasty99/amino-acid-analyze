@@ -1,4 +1,7 @@
-from interface import main_menu
+from interface import AminoAcidAnalyzerApp
+import tkinter as tk
 
 if __name__ == "__main__":
-    main_menu()
+    root = tk.Tk()
+    app = AminoAcidAnalyzerApp(root)
+    root.mainloop()
