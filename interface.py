@@ -70,6 +70,7 @@ class AminoAcidAnalyzerApp:
 
         result = analyse(seq)
         self.sequence_data[seq] = result
+        self.update_search_combobox()
 
         # Вывод результатов
         self.result_text.delete(1.0, tk.END)
@@ -79,6 +80,12 @@ class AminoAcidAnalyzerApp:
         self.result_text.insert(tk.END, f"Изоэлектрическая точка (pI): {result['pi']}\n")
         self.result_text.insert(tk.END, f"Список аминокислот: {', '.join(result['aminos'])}\n")
 
+
+    def update_search_combobox(self):
+        """Обновляет Combobox в вкладке 'Поиск' доступными последовательностями."""
+        self.seq_combobox['values'] = list(self.sequence_data.keys())
+        if self.sequence_data:
+            self.seq_combobox.current(0)  # Выбираем первую последовательность по умолчанию
 
     def setup_comparison_tab(self):
         # Первая последовательность
@@ -140,6 +147,10 @@ class AminoAcidAnalyzerApp:
         self.search_text.pack(pady=10)
 
     def search_subsequence(self):
+        if not self.sequence_data:
+            messagebox.showerror("Ошибка", "Сначала проанализируйте хотя бы одну последовательность!")
+            return
+
         seq = self.seq_var.get().upper()
         part = self.part_entry.get().upper()
 
@@ -148,11 +159,11 @@ class AminoAcidAnalyzerApp:
             return
 
         if seq not in self.sequence_data:
-            messagebox.showerror("Ошибка", "Сначала проанализируйте эту последовательность!")
+            messagebox.showerror("Ошибка", "Эта последовательность не была проанализирована!")
             return
 
         result = analyse(seq, find_part=part)
-        self.sequence_data[seq] = result
+        self.sequence_data[seq] = result  # Обновляем данные
 
         # Вывод результатов
         self.search_text.delete(1.0, tk.END)
