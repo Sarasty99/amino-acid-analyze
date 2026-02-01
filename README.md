@@ -52,6 +52,7 @@
     git clone https://github.com/Sarasty99/amino-acid-analyze.git
     ```
 2. **Установите зависимости:**
+    ```bash
     pip install -r requirements.txt
     ```
 3.  **Запустите скрипт:**
