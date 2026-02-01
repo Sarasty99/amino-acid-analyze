@@ -22,6 +22,7 @@
         .result-card h3 { margin-top: 0; }
         .error { color: #e74c3c; }
         .success { color: #27ae60; }
+        .warning {background-color: #fff3cd;border-left: 4px solid #ffc107;padding: 0.5em 1em; margin: 0.5em 0;border-radius: 4px;}
     </style>
 </head>
 <body>
@@ -66,6 +67,9 @@
         <div class="result-card" id="errorSection" style="display: none;">
             <h3>Ошибки</h3>
             <div id="errorList"></div>
+        </div>
+            <h3>Предупреждения</h3>
+            <div id="warningList"></div>
         </div>
     </div>
 
@@ -148,6 +152,16 @@
             document.getElementById('totalAmino').textContent = result.total_amino;
             document.getElementById('piValue').textContent = result.pi;
             
+            if (result.warnings && result.warnings.length > 0) {
+            let warningsHTML = '';
+            result.warnings.forEach(warn => {
+                warningsHTML += `<div class="warning">⚠️ ${warn}</div>`;
+            });
+            document.getElementById('warningList').innerHTML = warningsHTML;
+            document.getElementById('warningSection').style.display = 'block';
+        } else {
+            document.getElementById('warningSection').style.display = 'none';
+        }
             // Состав
             let compositionHTML = '';
             for (const [sign, data] of Object.entries(result.composition)) {
@@ -185,6 +199,7 @@
         const aminoList = [];
         const composition = {};
         const errors = [];
+        const warnings = [];
         
         // Очистка счетчиков
         for (const amino of Object.values(aminoAcids)) {
@@ -193,12 +208,15 @@
         
         // Анализ последовательности
         for (const residue of sequence) {
-            if (!aminoAcids[residue]) {
-                errors.push(`'${residue}' не является аминокислотой`);
-                continue;
-            }
-            
-            const amino = aminoAcids[residue];
+        const amino = aminoAcids[residue];
+
+        // Если символ невалидный
+        if (!amino) {
+            warnings.push(`Символ '${residue}' не является аминокислотой и будет проигнорирован`);
+            continue; // Пропускаем этот символ
+        }
+
+        // Обработка валидной аминокислоты
             amino.kol += 1;
             totalAmino += 1;
             totalMass += amino.mass;
