@@ -51,15 +51,13 @@
     ```bash
     git clone https://github.com/Sarasty99/amino-acid-analyze.git
     ```
-2.  **Перейдите в папку проекта:**
-    ```bash
-    cd amino-acid-analyze
+2. **Установите зависимости:**
+    pip install -r requirements.txt
     ```
 3.  **Запустите скрипт:**
     ```bash
-    python amino_7.py
+    python main.py
     ```
-4.  Следуйте инструкциям в меню.
 
 
 📌 Важные особенности
