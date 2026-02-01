@@ -2,22 +2,33 @@ import tkinter as tk
 from tkinter import ttk
 
 def configure_styles():
-    """Настройка стилей для Tkinter (округлые рамки, цвета, шрифты)."""
+    """Настройка стилей для Tkinter в тёплых пастельных тонах."""
     style = ttk.Style()
 
-    # Основные цвета
-    BG_COLOR = "#f0f0f0"  # Светло-серый фон
-    BTN_COLOR = "#4a7a8c"  # Синий цвет для кнопок
-    TEXT_COLOR = "#333333"  # Тёмный текст
-    ENTRY_COLOR = "#ffffff"  # Белый фон для полей ввода
+    # Основные цвета (тёплая палитра)
+    BG_COLOR = "#f9f5f0"          # Светлый бежевый фон
+    BTN_COLOR = "#d4a574"         # Мягкий золотистый (для кнопок)
+    BTN_HOVER = "#c49564"         # Более тёмный оттенок при наведении
+    TEXT_COLOR = "#5e4a3a"        # Тёмно-коричневый текст
+    ENTRY_COLOR = "#fefbf6"       # Кремовый фон для полей ввода
+    ACCENT_COLOR = "#a8c686"      # Мягкий зелёный (для акцентов)
 
-    # Настройка стиля для основного окна
+    # Настройка темы
     style.theme_use("clam")  # Используем тему "clam" для гибкости
+
+    # Стиль для основного окна
+    style.configure("TFrame", background=BG_COLOR)
 
     # Стиль для вкладок (Notebook)
     style.configure("TNotebook", background=BG_COLOR)
-    style.configure("TNotebook.Tab", padding=[10, 5], background="#e0e0e0", foreground=TEXT_COLOR)
-    style.map("TNotebook.Tab", background=[("selected", BTN_COLOR)], foreground=[("selected", "white")])
+    style.configure("TNotebook.Tab",
+                    padding=[15, 8],
+                    background="#e8dcc0",  # Светло-бежевый
+                    foreground=TEXT_COLOR,
+                    font=("Arial", 10))
+    style.map("TNotebook.Tab",
+              background=[("selected", BTN_COLOR)],  # Активная вкладка
+              foreground=[("selected", "white")])
 
     # Стиль для кнопок
     style.configure("TButton",
@@ -25,11 +36,12 @@ def configure_styles():
                     foreground="white",
                     borderwidth=1,
                     focusthickness=3,
-                    focuscolor="#2a4a5c",
+                    focuscolor=BTN_HOVER,
                     font=("Arial", 10, "bold"),
-                    padding=10)
+                    padding=10,
+                    borderradius=5)  # Округлые углы (если поддерживается)
     style.map("TButton",
-              background=[("active", "#3a6a7c")],  # Цвет при наведении
+              background=[("active", BTN_HOVER)],  # Цвет при наведении
               foreground=[("active", "white")])
 
     # Стиль для меток (Label)
@@ -44,21 +56,26 @@ def configure_styles():
                     fieldbackground=ENTRY_COLOR,
                     foreground=TEXT_COLOR,
                     insertcolor=TEXT_COLOR,
-                    padding=5,
-                    font=("Arial", 10))
+                    padding=8,
+                    font=("Arial", 10),
+                    borderwidth=1,
+                    relief="solid")
 
     # Стиль для Combobox
     style.configure("TCombobox",
                     fieldbackground=ENTRY_COLOR,
                     foreground=TEXT_COLOR,
-                    padding=5,
-                    font=("Arial", 10))
+                    padding=8,
+                    font=("Arial", 10),
+                    arrowcolor=TEXT_COLOR)
 
     # Стиль для текстового поля (Text)
     style.configure("TText",
                     background=ENTRY_COLOR,
                     foreground=TEXT_COLOR,
                     padding=10,
-                    font=("Arial", 10))
+                    font=("Arial", 10),
+                    borderwidth=1,
+                    relief="solid")
 
     return style
