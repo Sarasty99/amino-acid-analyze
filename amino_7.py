@@ -1,11 +1,10 @@
 class AminoAcids():
-    def __init__(self, sign, name, mass, radical, pka_radical=None):
+    def __init__(self, sign, name, mass, radical):
         self.sign = sign
         self.name = name
         self.mass = mass
         self.radical = radical
         self.kol = 0
-        self.pka_radical = pka_radical
     def intro(self):
         print(f'\t {self.sign.upper()} - {self.name}, m={self.mass}')
     def find(self):
@@ -24,15 +23,15 @@ amino_acids = {
     'P': AminoAcids('pro', 'пролин', 115.132, 'неполярный радикал, гидрофобный'),
     'S': AminoAcids('ser', 'серин', 105.093, 'полярный радикал, гидрофильный'),
     'T': AminoAcids('thr', 'треонин', 119.119, 'полярный радикал, гидрофильный'),
-    'C': AminoAcids('cys', 'цистеин', 121.154, 'полярный радикал, гидрофильный', pka_radical=8.30),
-    'Y': AminoAcids('tyr', 'тирозин', 181.189, 'полярный радикал, гидрофильный', pka_radical=10.10),
+    'C': AminoAcids('cys', 'цистеин', 121.154, 'полярный радикал, гидрофильный'),
+    'Y': AminoAcids('tyr', 'тирозин', 181.189, 'полярный радикал, гидрофильный'),
     'N': AminoAcids('asn', 'аспарагин', 132.119, 'полярный радикал, гидрофильный'),
     'Q': AminoAcids('gln', 'глутамин', 146.145, 'полярный радикал, гидрофильный'),
-    'D': AminoAcids('asp', 'аспаргиновая кислота', 133.103, 'электрический(-) заряженный радикал, гидрофильный', pka_radical=3.90),
-    'E': AminoAcids('glu', 'глутаминовая кислота', 147.130, 'электрический(-) заряженный радикал, гидрофильный', 4.25),
-    'K': AminoAcids('lys', 'лизин', 146.189, 'электрический(+) заряженный радикал, гидрофильный', pka_radical=10.53),
-    'R': AminoAcids('arg', 'аргинин', 174.203, 'электрический(+) заряженный радикал, гидрофильный', pka_radical=12.48),
-    'H': AminoAcids('his', 'гистидин', 155.156, 'электрический(+) заряженный радикал, гидрофильный', pka_radical=6.00)
+    'D': AminoAcids('asp', 'аспаргиновая кислота', 133.103, 'электрический(-) заряженный радикал, гидрофильный'),
+    'E': AminoAcids('glu', 'глутаминовая кислота', 147.130, 'электрический(-) заряженный радикал, гидрофильный'),
+    'K': AminoAcids('lys', 'лизин', 146.189, 'электрический(+) заряженный радикал, гидрофильный'),
+    'R': AminoAcids('arg', 'аргинин', 174.203, 'электрический(+) заряженный радикал, гидрофильный'),
+    'H': AminoAcids('his', 'гистидин', 155.156, 'электрический(+) заряженный радикал, гидрофильный')
 }
 def analyse(peptid, amino_acids, find_part=None):
     result = {}
@@ -61,39 +60,6 @@ def analyse(peptid, amino_acids, find_part=None):
     result['total_mass'] = total_mass
     result['total_amino'] = total_amino
     result['aminos'] = amino_list
-
-    pka_values = []
-    
-    # 1. Константы концов цепи (приближенные стандартные значения)
-    N_terminal_pka = 9.0  # pKa для N-конца (альфа-амино)
-    C_terminal_pka = 2.0  # pKa для C-конца (альфа-карбоксил)
-    
-    pka_values.append(C_terminal_pka)
-    pka_values.append(N_terminal_pka)
-    
-    # 2. Радикальные pKa
-    for residue_sign in peptid:
-        amino_obj = amino_acids.get(residue_sign.upper())
-        
-        if amino_obj and amino_obj.pka_radical is not None:
-            pka_values.append(amino_obj.pka_radical)
-            
-    # 3. Сортировка
-    pka_values.sort()
-    
-    # 4. Расчет pI (Упрощенное приближение v1.0)
-    if len(pka_values) < 2:
-        pi_result = None
-    else:
-        # Приближение: pI лежит между самым кислым элементом (C-конец) 
-        # и самым основным элементом (N-конец или самый основной радикал).
-        pi_result = (pka_values[0] + pka_values[-1]) / 2
-        
-    # Добавляем результат в словарь
-    result['pi'] = round(pi_result, 3) if pi_result is not None else "N/A"
-    
-    # --- КОНЕЦ НОВОГО КОДА ДЛЯ pI ---
-
     if total_mass == 0:
         print("Ошибка: Общая масса равна 0. Невозможно рассчитать массовую долю.")
     else:
@@ -117,7 +83,7 @@ def analyse(peptid, amino_acids, find_part=None):
             print(f'Искомая последовательность найдена {count} раз(а).')
             print('Позиции вхождений:', positions)
             result['positions'] = positions
-
+    
     return result 
 sequence_data = {}  # словарь для хранения информации о последовательностях
 
