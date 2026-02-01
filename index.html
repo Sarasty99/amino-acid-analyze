@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF--8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Анализатор Аминокислотных Последовательностей</title>
     <style>
@@ -12,6 +12,16 @@
         code { background-color: #eee; padding: 0.2em 0.4em; border-radius: 3px; }
         a { color: #3498db; }
         .badges { margin-bottom: 1em; }
+        .input-section { margin-bottom: 2em; }
+        .input-group { display: flex; gap: 1em; align-items: center; }
+        .input-group input { flex: 1; padding: 0.5em; border: 1px solid #ddd; border-radius: 4px; }
+        .input-group button { padding: 0.5em 1em; background-color: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .input-group button:hover { background-color: #2980b9; }
+        .result-section { margin-top: 2em; }
+        .result-card { background-color: #f9f9f9; padding: 1em; border-radius: 4px; margin-bottom: 1em; }
+        .result-card h3 { margin-top: 0; }
+        .error { color: #e74c3c; }
+        .success { color: #27ae60; }
     </style>
 </head>
 <body>
@@ -30,12 +40,42 @@
         Этот инструмент предназначен для базового анализа пептидных цепей. Он позволяет рассчитать массу, состав и массовые доли аминокислот, а также находить вхождения одной последовательности в другую.
     </p>
 
+    <!-- Интерактивная форма -->
+    <div class="input-section">
+        <h2>Анализ последовательности</h2>
+        <div class="input-group">
+            <input type="text" id="sequenceInput" placeholder="Введите последовательность аминокислот (например: ROG)" maxlength="100">
+            <button onclick="analyzeSequence()">Анализировать</button>
+        </div>
+        <p style="color: #666; font-size: 0.9em;">Примеры: ROG, DDD, KRR, ACE, YGGFL</p>
+    </div>
+
+    <!-- Область для результатов -->
+    <div class="result-section" id="resultSection" style="display: none;">
+        <h2>Результаты анализа</h2>
+        <div class="result-card">
+            <h3>Общая информация</h3>
+            <p><strong>Общая масса:</strong> <span id="totalMass">0</span> Да</p>
+            <p><strong>Общее число аминокислот:</strong> <span id="totalAmino">0</span></p>
+            <p><strong>Изоэлектрическая точка (pI):</strong> <span id="piValue">N/A</span></p>
+        </div>
+        <div class="result-card">
+            <h3>Состав</h3>
+            <div id="compositionTable"></div>
+        </div>
+        <div class="result-card" id="errorSection" style="display: none;">
+            <h3>Ошибки</h3>
+            <div id="errorList"></div>
+        </div>
+    </div>
+
     <h2>Возможности</h2>
     <ul>
         <li>🧬 Расчет общей массы и длины пептидной цепи.</li>
         <li>📊 Подробный анализ состава.</li>
         <li>🔍 Поиск подпоследовательностей.</li>
         <li>⚖️ Сравнение двух последовательностей.</li>
+        <li>🎯 Расчет изоэлектрической точки (pI).</li>
     </ul>
 
     <h2>Как использовать</h2>
@@ -62,6 +102,153 @@
         Посмотреть полный код и детали проекта можно на GitHub: <a href="https://github.com/Sarasty99/amino-acid-analyze">github.com/Sarasty99/amino-acid-analyze</a>
     </p>
 </div>
+
+<!-- Скрипт для интерактивности -->
+<script>
+    // Объект с данными о аминокислотах (это упрощенная версия, которую вы можете расширить)
+    const aminoAcids = {
+        'G': {name: 'глицин', mass: 75.067, radical: 'неполярный радикал, гидрофобный'},
+        'V': {name: 'валин', mass: 117.147, radical: 'неполярный радикал, гидрофобный'},
+        'L': {name: 'лейцин', mass: 131.175, radical: 'неполярный радикал, гидрофобный'},
+        'I': {name: 'изолейцин', mass: 131.175, radical: 'неполярный радикал, гидрофобный'},
+        'M': {name: 'метионин', mass: 149.208, radical: 'неполярный радикал, гидрофобный'},
+        'A': {name: 'аланин', mass: 89.094, radical: 'неполярный радикал, гидрофобный'},
+        'F': {name: 'фенилаланин', mass: 165.192, radical: 'неполярный радикал, гидрофобный'},
+        'W': {name: 'триптофан', mass: 204.228, radical: 'неполярный радикал, гидрофобный'},
+        'P': {name: 'пролин', mass: 115.132, radical: 'неполярный радикал, гидрофобный'},
+        'S': {name: 'серин', mass: 105.093, radical: 'полярный радикал, гидрофильный'},
+        'T': {name: 'треонин', mass: 119.119, radical: 'полярный радикал, гидрофильный'},
+        'C': {name: 'цистеин', mass: 121.154, radical: 'полярный радикал, гидрофильный', pka_radical: 8.30},
+        'Y': {name: 'тирозин', mass: 181.189, radical: 'полярный радикал, гидрофильный', pka_radical: 10.10},
+        'N': {name: 'аспарагин', mass: 132.119, radical: 'полярный радикал, гидрофильный'},
+        'Q': {name: 'глутамин', mass: 146.145, radical: 'полярный радикал, гидрофильный'},
+        'D': {name: 'аспаргиновая кислота', mass: 133.103, radical: 'электрический(-) заряженный радикал, гидрофильный', pka_radical: 3.90},
+        'E': {name: 'глутаминовая кислота', mass: 147.130, radical: 'электрический(-) заряженный радикал, гидрофильный', pka_radical: 4.25},
+        'K': {name: 'лизин', mass: 146.189, radical: 'электрический(+) заряженный радикал, гидрофильный', pka_radical: 10.53},
+        'R': {name: 'аргинин', mass: 174.203, radical: 'электрический(+) заряженный радикал, гидрофильный', pka_radical: 12.48},
+        'H': {name: 'гистидин', mass: 155.156, radical: 'электрический(+) заряженный радикал, гидрофильный', pka_radical: 6.00}
+    };
+
+    function analyzeSequence() {
+        const input = document.getElementById('sequenceInput').value.trim();
+        const resultSection = document.getElementById('resultSection');
+        const errorSection = document.getElementById('errorSection');
+        const errorList = document.getElementById('errorList');
+        
+        if (!input) {
+            alert('Пожалуйста, введите последовательность аминокислот.');
+            return;
+        }
+
+        try {
+            const result = analyzeSequenceData(input.toUpperCase());
+            
+            // Отображение результатов
+            document.getElementById('totalMass').textContent = result.total_mass.toFixed(3);
+            document.getElementById('totalAmino').textContent = result.total_amino;
+            document.getElementById('piValue').textContent = result.pi;
+            
+            // Состав
+            let compositionHTML = '';
+            for (const [sign, data] of Object.entries(result.composition)) {
+                compositionHTML += `
+                    <div>
+                        <strong>${data.name} (${sign}):</strong> ${data.count} шт., ${data.mass_share_percent}% массы
+                    </div>
+                `;
+            }
+            document.getElementById('compositionTable').innerHTML = compositionHTML;
+            
+            // Ошибки
+            if (result.errors && result.errors.length > 0) {
+                let errorsHTML = '';
+                result.errors.forEach(error => {
+                    errorsHTML += `<div>${error}</div>`;
+                });
+                errorList.innerHTML = errorsHTML;
+                errorSection.style.display = 'block';
+            } else {
+                errorSection.style.display = 'none';
+            }
+            
+            resultSection.style.display = 'block';
+            
+        } catch (error) {
+            alert('Произошла ошибка при анализе последовательности: ' + error.message);
+        }
+    }
+
+    function analyzeSequenceData(sequence) {
+        const result = {};
+        let totalMass = 0;
+        let totalAmino = 0;
+        const aminoList = [];
+        const composition = {};
+        const errors = [];
+        
+        // Очистка счетчиков
+        for (const amino of Object.values(aminoAcids)) {
+            amino.kol = 0;
+        }
+        
+        // Анализ последовательности
+        for (const residue of sequence) {
+            if (!aminoAcids[residue]) {
+                errors.push(`'${residue}' не является аминокислотой`);
+                continue;
+            }
+            
+            const amino = aminoAcids[residue];
+            amino.kol += 1;
+            totalAmino += 1;
+            totalMass += amino.mass;
+            aminoList.push(residue);
+        }
+        
+        result.total_mass = totalMass;
+        result.total_amino = totalAmino;
+        result.aminos = aminoList;
+        
+        // Расчет pI
+        const pkaValues = [2.0, 9.0]; // C-конец и N-конец
+        
+        for (const residue of sequence) {
+            const amino = aminoAcids[residue];
+            if (amino.pka_radical) {
+                pkaValues.push(amino.pka_radical);
+            }
+        }
+        
+        pkaValues.sort();
+        
+        if (pkaValues.length < 2) {
+            result.pi = 'N/A';
+        } else {
+            result.pi = ((pkaValues[0] + pkaValues[pkaValues.length - 1]) / 2).toFixed(3);
+        }
+        
+        // Состав
+        if (totalMass > 0) {
+            for (const [sign, amino] of Object.entries(aminoAcids)) {
+                if (amino.kol > 0) {
+                    const massShare = (amino.mass * amino.kol * 100) / totalMass;
+                    composition[sign] = {
+                        name: amino.name,
+                        count: amino.kol,
+                        mass_share_percent: massShare.toFixed(2)
+                    };
+                }
+            }
+        }
+        
+        result.composition = composition;
+        if (errors.length > 0) {
+            result.errors = errors;
+        }
+        
+        return result;
+    }
+</script>
 
 </body>
 </html>
