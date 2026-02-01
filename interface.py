@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from analysis import analyse
 from data import amino_acids
+from visualization import plot_amino_acid_distribution, plot_mass_share, plot_hydrophobicity
 from styles import configure_styles  # Импортируем стили
 
 class AminoAcidAnalyzerApp:
@@ -40,10 +41,15 @@ class AminoAcidAnalyzerApp:
         self.search_tab = ttk.Frame(self.notebook, padding=10)
         self.notebook.add(self.search_tab, text="Поиск")
 
+        # Вкладка "Визуализация"
+        self.visualization_tab = ttk.Frame(self.notebook, padding=10)
+        self.notebook.add(self.visualization_tab, text="Визуализация")
+
         # Настройка вкладок
         self.setup_analysis_tab()
         self.setup_comparison_tab()
         self.setup_search_tab()
+        self.setup_visualization_tab()
 
     def setup_analysis_tab(self):
         # Контейнер для центрирования
@@ -153,6 +159,7 @@ class AminoAcidAnalyzerApp:
         self.comparison_text.insert(tk.END, f"Уникальные для второй: {', '.join(uniq2)}\n")
 
     def search_subsequence(self):
+
         if not self.sequence_data:
             messagebox.showerror("Ошибка", "Сначала проанализируйте хотя бы одну последовательность!")
             return
@@ -174,3 +181,44 @@ class AminoAcidAnalyzerApp:
         # Вывод результатов
         self.search_text.delete(1.0, tk.END)
         self.search_text.insert(tk.END, f"Позиции вхождения: {result['positions']}\n")
+
+    def setup_visualization_tab(self):
+        container = ttk.Frame(self.visualization_tab)
+        container.pack(expand=True, fill=tk.BOTH, padx=20, pady=20)
+
+        # Кнопки для выбора типа графика
+        ttk.Label(container, text="Выберите тип визуализации:").pack(pady=10)
+
+        btn_frame = ttk.Frame(container)
+        btn_frame.pack(pady=10)
+
+        ttk.Button(btn_frame, text="Распределение аминокислот", command=lambda: self.show_plot("distribution")).pack(side=tk.LEFT, padx=5)
+        ttk.Button(btn_frame, text="Массовая доля", command=lambda: self.show_plot("mass_share")).pack(side=tk.LEFT, padx=5)
+        ttk.Button(btn_frame, text="Гидрофобность", command=lambda: self.show_plot("hydrophobicity")).pack(side=tk.LEFT, padx=5)
+
+        # Контейнер для графиков
+        self.plot_container = ttk.Frame(container)
+        self.plot_container.pack(fill=tk.BOTH, expand=True)
+
+    # Добавляем метод show_plot()
+    def show_plot(self, plot_type):
+        """Отображает выбранный график."""
+        # Очищаем контейнер
+        for widget in self.plot_container.winfo_children():
+            widget.destroy()
+
+        # Если нет проанализированных последовательностей
+        if not self.sequence_data:
+            messagebox.showerror("Ошибка", "Сначала проанализируйте последовательность!")
+            return
+
+        # Получаем последнюю проанализированную последовательность
+        seq = next(iter(self.sequence_data.keys()))
+
+        # Строим график в зависимости от типа
+        if plot_type == "distribution":
+            plot_amino_acid_distribution(seq, self.plot_container)
+        elif plot_type == "mass_share":
+            plot_mass_share(seq, self.plot_container)
+        elif plot_type == "hydrophobicity":
+            plot_hydrophobicity(seq, self.plot_container)
