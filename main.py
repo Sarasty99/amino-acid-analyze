@@ -1,3 +1,6 @@
+import matplotlib
+matplotlib.use("TkAgg")  # Указываем бэкенд для matplotlib
+
 from interface import AminoAcidAnalyzerApp
 import tkinter as tk
 
