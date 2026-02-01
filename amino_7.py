@@ -61,6 +61,39 @@ def analyse(peptid, amino_acids, find_part=None):
     result['total_mass'] = total_mass
     result['total_amino'] = total_amino
     result['aminos'] = amino_list
+
+    pka_values = []
+    
+    # 1. Константы концов цепи (приближенные стандартные значения)
+    N_terminal_pka = 9.0  # pKa для N-конца (альфа-амино)
+    C_terminal_pka = 2.0  # pKa для C-конца (альфа-карбоксил)
+    
+    pka_values.append(C_terminal_pka)
+    pka_values.append(N_terminal_pka)
+    
+    # 2. Радикальные pKa
+    for residue_sign in peptid:
+        amino_obj = amino_acids.get(residue_sign.upper())
+        
+        if amino_obj and amino_obj.pka_radical is not None:
+            pka_values.append(amino_obj.pka_radical)
+            
+    # 3. Сортировка
+    pka_values.sort()
+    
+    # 4. Расчет pI (Упрощенное приближение v1.0)
+    if len(pka_values) < 2:
+        pi_result = None
+    else:
+        # Приближение: pI лежит между самым кислым элементом (C-конец) 
+        # и самым основным элементом (N-конец или самый основной радикал).
+        pi_result = (pka_values[0] + pka_values[-1]) / 2
+        
+    # Добавляем результат в словарь
+    result['pi'] = round(pi_result, 3) if pi_result is not None else "N/A"
+    
+    # --- КОНЕЦ НОВОГО КОДА ДЛЯ pI ---
+
     if total_mass == 0:
         print("Ошибка: Общая масса равна 0. Невозможно рассчитать массовую долю.")
     else:
@@ -84,7 +117,7 @@ def analyse(peptid, amino_acids, find_part=None):
             print(f'Искомая последовательность найдена {count} раз(а).')
             print('Позиции вхождений:', positions)
             result['positions'] = positions
-    
+
     return result 
 sequence_data = {}  # словарь для хранения информации о последовательностях
 
