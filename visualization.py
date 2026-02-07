@@ -4,6 +4,7 @@ from data import amino_acids
 import numpy as np
 from tkinter import ttk, messagebox
 import tkinter as tk
+from analysis import calculate_gravy, find_amyloid_regions
 
 def plot_amino_acid_distribution(seq, parent_frame):
     """Строит гистограмму распределения аминокислот (игнорирует неизвестные)."""
@@ -89,3 +90,46 @@ def plot_hydrophobicity(seq, parent_frame):
     canvas = FigureCanvasTkAgg(fig, master=parent_frame)
     canvas.draw()
     canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+
+def plot_gravy(seq, parent_frame):
+    """График GRAVY для окна скольжения"""
+    window_size = 7
+    gravy_values = []
+
+    for i in range(len(seq) - window_size + 1):
+        window = seq[i:i+window_size]
+        gravy = calculate_gravy(window)
+        gravy_values.append(gravy)
+
+    fig, ax = plt.subplots(figsize=(8, 5))
+    ax.plot(range(1, len(gravy_values)+1), gravy_values, color="#d4a574")
+    ax.axhline(y=0, color='gray', linestyle='--')
+    ax.set_title("GRAVY по окну скольжения", fontsize=12, fontweight="bold")
+    ax.set_xlabel("Позиция", fontsize=10)
+    ax.set_ylabel("GRAVY", fontsize=10)
+    plt.tight_layout()
+
+    canvas = FigureCanvasTkAgg(fig, master=parent_frame)
+    canvas.draw()
+    canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+
+def plot_amyloid_regions(seq, parent_frame):
+    """Визуализация амилоидных участков"""
+    regions = find_amyloid_regions(seq)
+    if not regions:
+        messagebox.showinfo("Информация", "Амилоидные участки не найдены")
+        return
+
+    fig, ax = plt.subplots(figsize=(8, 5))
+    for start, end, _ in regions:
+        ax.axvspan(start, end, color='red', alpha=0.3)
+
+    ax.set_title("Амилоидные участки", fontsize=12, fontweight="bold")
+    ax.set_xlabel("Позиция в последовательности", fontsize=10)
+    ax.set_ylim(0, 1)
+    plt.tight_layout()
+
+    canvas = FigureCanvasTkAgg(fig, master=parent_frame)
+    canvas.draw()
+    canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+    

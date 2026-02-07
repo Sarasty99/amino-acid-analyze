@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from analysis import analyse
 from data import amino_acids
-from visualization import plot_amino_acid_distribution, plot_mass_share, plot_hydrophobicity
+from visualization import plot_amino_acid_distribution, plot_mass_share, plot_hydrophobicity, plot_gravy, plot_amyloid_regions
 from styles import configure_styles  # Импортируем стили
 
 class AminoAcidAnalyzerApp:
@@ -136,6 +136,9 @@ class AminoAcidAnalyzerApp:
         self.result_text.insert(tk.END, f"Количество аминокислот: {result['total_amino']}\n")
         self.result_text.insert(tk.END, f"Изоэлектрическая точка (pI): {result['pi']}\n")
         self.result_text.insert(tk.END, f"Список аминокислот: {', '.join(result['aminos'])}\n")
+        self.result_text.insert(tk.END, f"GRAVY: {result['gravy']}\n")
+        self.result_text.insert(tk.END, f"Коэффициент экстинкции: {result['extinction']}\n")
+        self.result_text.insert(tk.END, f"Амилоидные участки: {len(result['amyloid_regions'])}\n")
 
     def compare_sequences(self):
         seq1 = self.seq1_entry.get().upper()
@@ -195,6 +198,9 @@ class AminoAcidAnalyzerApp:
         ttk.Button(btn_frame, text="Распределение аминокислот", command=lambda: self.show_plot("distribution")).pack(side=tk.LEFT, padx=5)
         ttk.Button(btn_frame, text="Массовая доля", command=lambda: self.show_plot("mass_share")).pack(side=tk.LEFT, padx=5)
         ttk.Button(btn_frame, text="Гидрофобность", command=lambda: self.show_plot("hydrophobicity")).pack(side=tk.LEFT, padx=5)
+        ttk.Button(btn_frame, text="GRAVY", command=lambda: self.show_plot("gravy")).pack(side=tk.LEFT, padx=5)
+        ttk.Button(btn_frame, text="Амилоидные участки", command=lambda: self.show_plot("amyloid")).pack(side=tk.LEFT, padx=5)
+
 
         # Контейнер для графиков
         self.plot_container = ttk.Frame(container)
@@ -222,3 +228,7 @@ class AminoAcidAnalyzerApp:
             plot_mass_share(seq, self.plot_container)
         elif plot_type == "hydrophobicity":
             plot_hydrophobicity(seq, self.plot_container)
+        elif plot_type == "gravy":
+            plot_gravy(seq, self.plot_container)
+        elif plot_type == "amyloid":
+            plot_amyloid_regions(seq, self.plot_container)
